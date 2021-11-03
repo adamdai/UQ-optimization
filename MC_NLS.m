@@ -63,36 +63,74 @@ plot(x(k),y(k));
 scatter(x,y);
 
 
-%% Zonotope GN
+%% Interval GN 
 
-% x0 = [5;5];
-% x = zonotope(x0);
-% 
-% % uncertain measurements
-% y_c = [2.2; 8.0; 12.0; 9.2]; 
-% y_G = 0.1*eye(4);
-% y = zonotope([y_c, y_G]);
-% 
-% figure(3); hold on; grid on
-% plot(2,1,'r*');
-% 
-% axis equal
-% xlabel('x-coordinate (m)');
-% ylabel('y-coordinate (m)');
-% 
-% for i = 1:N
-%     Ji = J_z(x,M);
-%     %ri = g_z(x,M) - y;
-%     ri = g_z(x,M) + zonotope(-y.center,y.generators);
-%     JiT = intMat_transpose(Ji);
-%     JTJ = intervalMatrix(matZonotope(JiT*Ji)); % workaround for bug in CORA
-%     dx = intMat_inverse(JTJ) * JiT*ri;
-%     dx = zonotope(-dx.center, dx.generators);  % x = x - dx
-%     x = x + dx; 
-%     x = reduce(x,'methA'); 
-%     plot(x,[1,2],'FaceColor','r','FaceAlpha',0.2,'Filled',true);
-%     %xlim([0 10]); ylim([0 10])
-% end
+x0 = [5;5];
+x = x0;
+
+y_c = [2.2; 8.0; 12.0; 9.2]; 
+y_w = 0.1*ones(4,1);
+y = interval(y_c - y_w,y_c + y_w);
+
+% uniformly sample interval
+n_samp = 1000;
+Y = sampleBox(y,n_samp); 
+
+X = zeros(2,n_samp);
+
+for j = 1:n_samp
+    x = x0;
+    for i = 1:N
+        Ji = J(x,M);
+        ri = g(x,M) - Y(:,j);
+        dx = inv(Ji'*Ji) * Ji'*ri;
+        x = x - dx;
+    end
+    X(:,j) = x;
+end
+
+x = X(1,:)'; y = X(2,:)';
+
+% compute "vertices" of output set by taking extreme values of y
+y_ext = y_c + diag(y_w) * 2 * (dec2bin(0:2^m-1)-'0' - 0.5)';
+
+
+
+figure(1); hold on 
+plot(x(k),y(k));
+scatter(x,y);
+
+%% Gaussian uncertain GN
+
+x0 = [5;5];
+x = x0;
+
+y_mu = [2.2; 8.0; 12.0; 9.2]; 
+y_Sigma = 0.1*eye(4);
+
+% 100 samples within y
+n_samp = 1000;
+Y = mvnrnd(y_mu,y_Sigma,n_samp)'; 
+
+X = zeros(2,n_samp);
+
+for j = 1:n_samp
+    x = x0;
+    for i = 1:N
+        Ji = J(x,M);
+        ri = g(x,M) - Y(:,j);
+        dx = inv(Ji'*Ji) * Ji'*ri;
+        x = x - dx;
+    end
+    X(:,j) = x;
+end
+
+x = X(1,:)'; y = X(2,:)';
+k = boundary(x,y);
+
+figure(2); hold on 
+plot(x(k),y(k));
+scatter(x,y);
 
 %% functions
 
