@@ -91,7 +91,8 @@ for j = 1:n_samp
 end
 
 x = X(1,:)'; y = X(2,:)';
-k = convhull(x,y);
+k = boundary(x,y);
+
 figure(1); hold on 
 plot(x(k),y(k));
 scatter(x,y);
@@ -112,9 +113,7 @@ for j = 1:n_ext
     X_ext(:,j) = x;
 end
 
-x = X_ext(1,:)'; y = X_ext(2,:)';
-k = convhull(x,y);
-figure(2); hold on 
+figure(1); hold on 
 plot(x(k),y(k));
 scatter(x,y);
 
