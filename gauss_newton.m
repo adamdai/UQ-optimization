@@ -1,12 +1,24 @@
-%% parameters
+function x = gauss_newton(g,J,y,x0)
+% gauss_newton(g,J,x0)
+%
+% Given a measurement function, corresponding Jacobian, measurements, and 
+% initial guess perform Gauss Newton to solve the nonlinear least squares 
+% problem.
+%
+% Authors: Adam Dai 
+% Created: 9 Nov 2021 
+% Updated: 
 
-n = 2; % state dimension
-m = 4; % measurement dimension
 
-M = [0 10 10  0; % measurement beacon locations
-     0  0 10 10]; 
+for i = 1:N
+    Ji = J(x,M);
+    ri = g(x,M) - y;
+    dx = inv(Ji'*Ji) * Ji'*ri;
+    x = x - dx;
+end
 
-N = 5; % iterations
+end
+
 
 %% Standard GN
 
@@ -91,8 +103,7 @@ for j = 1:n_samp
 end
 
 x = X(1,:)'; y = X(2,:)';
-k = boundary(x,y);
-
+k = convhull(x,y);
 figure(1); hold on 
 plot(x(k),y(k));
 scatter(x,y);
@@ -113,7 +124,9 @@ for j = 1:n_ext
     X_ext(:,j) = x;
 end
 
-figure(1); hold on 
+x = X_ext(1,:)'; y = X_ext(2,:)';
+k = convhull(x,y);
+figure(2); hold on 
 plot(x(k),y(k));
 scatter(x,y);
 
@@ -164,51 +177,4 @@ function Ji = J(x,M)
         d = norm(M(:,i) - x);
         Ji(i,:) = [-(M(1,i)-x(1))/d, -(M(2,i)-x(2))/d];
     end
-end
-
-% zonotope measurement function
-function y = g_z(x,M)
-    % check if x is 0-dimensional 
-    if size(x.generators,2) == 0
-        y = zonotope(vecnorm(M - x.center, 2, 1)');
-        return
-    end
-    % otherwise, x is a nontrivial zonotope
-    m = size(M,2);
-    y_c = zeros(m,1);
-    y_G = eye(m);
-    for i = 1:m
-        z = x - M(:,i);
-        I = zono_norm(z);
-        y_c(i) = I.center;
-        y_G(i,i) = I.volume/2;
-    end
-    y = zonotope(y_c,y_G);
-end
-
-% zonotope measurement jacobian
-function Ji = J_z(x,M)
-    m = size(M,2); n = dim(x);
-    J_c = zeros(m,n);
-    % check if x is 0-dimensional 
-    if size(x.generators,2) == 0
-        x_c = x.center;
-        for i = 1:m
-            d = norm(M(:,i) - x_c);
-            J_c(i,:) = [-(M(1,i)-x_c(1))/d, -(M(2,i)-x_c(2))/d];
-        end
-        Ji = intervalMatrix(J_c);
-        return
-    end
-    % otherwise, x is a nontrivial zonotope
-    J_g = zeros(m,n);
-    for i = 1:m
-        d_z = x - M(:,i); % zonotope
-        d_I = zono_norm(d_z); % norm(zonotope) = interval
-        Ji1 = (interval(project(x,1)) - M(1,i)) / d_I; % interval/interval = interval
-        Ji2 = (interval(project(x,2)) - M(2,i)) / d_I;
-        J_c(i,1) = Ji1.center; J_c(i,2) = Ji2.center;
-        J_g(i,1) = Ji1.volume/2; J_g(i,2) = Ji2.volume/2;
-    end
-    Ji = intervalMatrix(J_c,J_g);
 end
