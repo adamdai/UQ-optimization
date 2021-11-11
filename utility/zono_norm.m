@@ -1,33 +1,44 @@
-%% description
-% test find the interval imposed by taking the norm over all the points in 
-% a zonotope
-
-% c = [3;3];
-% G = [1 0.5;
-%      0.2 2];
-% Z = zonotope(c,G);
-% 
-% plot(Z)
-
 function I = zono_norm(Z)
+% zono_norm - find the interval imposed by taking the norm over all the 
+%             points in a zonotope
+%                  (cop out with sampling for now)
+% 
+% Syntax:
+%   zono_norm(A)
+% 
+% Inputs:
+%   Z - zonotope
+%
+% Outputs:
+%   I - interval
+% 
+% Example:
+%
+%
+% Author: Adam Dai
+% Created: Nov 9 2021
+% Updated: 
 
-% sample points
-N = 1000;
-X = sampleBox(Z,N);
-min_norm = inf;
-max_norm = 0;
-for i = 1:N
-    x = X(:,i);
-    d = norm(x);
-    if d < min_norm
-        min_norm = d;
+%------------- BEGIN CODE --------------
+
+    % sample points
+    N = 1000;
+    X = sampleBox(Z,N);
+    min_norm = inf;
+    max_norm = 0;
+    for i = 1:N
+        x = X(:,i);
+        d = norm(x);
+        if d < min_norm
+            min_norm = d;
+        end
+        if d > max_norm
+            max_norm = d;
+        end
     end
-    if d > max_norm
-        max_norm = d;
-    end
+
+    I = interval(min_norm, max_norm);
+
 end
 
-I = interval(min_norm, max_norm);
-
-end
-
+%------------- END OF CODE --------------
