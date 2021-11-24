@@ -1,3 +1,5 @@
+clear; close all; clc;
+
 %% parameters
 
 n = 2; % state dimension
@@ -15,7 +17,8 @@ x0 = [5;5];
 x = x0;
 
 y_mu = [2.2; 8.0; 12.0; 9.2]; 
-y_Sigma = 0.1*eye(4);
+%y_Sigma = diag([0.01,0.01,1.0,0.01]);
+y_Sigma = diag([0.01,1.0,0.01,1.0]);
 
 % 1000 samples within y
 n_samp = 1e5;
@@ -28,11 +31,9 @@ for j = 1:n_samp
 end
 
 x = X(1,:)'; y = X(2,:)';
-k = boundary(x,y);
 
-figure(2); hold on 
-plot(x(k),y(k));
-scatter(x,y);
+figure(1); hold on; axis equal
+scatter(x,y,'.');
 
 %% functions
 

@@ -18,8 +18,8 @@ y = [2.2; 8.0; 12.0; 9.2]; % approx. measurements taken at x = [2;1]
 x = gauss_newton(@g,@J,y,x0,M,N);
 
 figure(1); hold on; grid on; axis equal
-scatter(M(1,:)',M(2,:)','o');
-scatter(x(1),x(2),'*');
+scatter(M(1,:)',M(2,:)','d');
+scatter(x(1),x(2),'o');
 for i = 1:4
     plot([M(1,i);x(1)],[M(2,i);x(2)],'--b');
 end
