@@ -17,7 +17,7 @@ x0 = [5;5];
 
 y_c = [2.2; 8.0; 12.0; 9.2]; 
 %y_w = 0.1*ones(4,1);
-y_w = [0.1; 0.2; 0.3; 0.4];
+y_w = [1.0; 0.01; 0.01; 1.0];
 y = interval(y_c - y_w,y_c + y_w);
 
 % uniformly sample interval
@@ -31,33 +31,26 @@ for j = 1:n_samp
     X(:,j) = gauss_newton(@g,@J,Y(:,j),x0,M,N);
 end
 
-x = X(1,:)'; y = X(2,:)';
-k = convhull(x,y);
+x_pts = X(1,:)'; y_pts = X(2,:)';
+k = convhull(x_pts,y_pts);
 figure(1); hold on; axis equal
-plot(x(k),y(k));
-scatter(x,y);
+plot(x_pts(k),y_pts(k));
+scatter(x_pts,y_pts);
 
 % compute "vertices" of output set by taking extreme values of y
-y_ext = y_c + diag(y_w) * 2 * (dec2bin(0:2^m-1)-'0' - 0.5)';
-n_ext = length(y_ext);
+Y_ext = y_c + diag(y_w) * 2 * (dec2bin(0:2^m-1)-'0' - 0.5)';
+n_ext = length(Y_ext);
 
 X_ext = zeros(2,n_ext);
 for j = 1:n_ext
-    x = x0;
-    for i = 1:N
-        Ji = J(x,M);
-        ri = g(x,M) - y_ext(:,j);
-        dx = inv(Ji'*Ji) * Ji'*ri;
-        x = x - dx;
-    end
-    X_ext(:,j) = x;
+    X_ext(:,j) = gauss_newton(@g,@J,Y_ext(:,j),x0,M,N);
 end
 
-x = X_ext(1,:)'; y = X_ext(2,:)';
-k = convhull(x,y);
+x_pts = X_ext(1,:)'; y_pts = X_ext(2,:)';
+k = convhull(x_pts,y_pts);
 figure(2); hold on; axis equal 
-plot(x(k),y(k));
-scatter(x,y);
+plot(x_pts(k),y_pts(k));
+scatter(x_pts,y_pts);
 
 
 %% functions
