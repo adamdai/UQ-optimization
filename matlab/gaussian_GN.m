@@ -13,11 +13,12 @@ N = 5; % iterations
 
 %% Gaussian uncertain GN
 
-x0 = [5;5];
+x0 = [1;1];
 x = x0;
 
-y_mu = [2.2; 8.0; 12.0; 9.2]; 
-y_sigma = [0.01,1.0,0.01,1.0];
+%y_mu = [2.2; 8.0; 12.0; 9.2]; 
+y_mu = [7.07; 7.07; 7.07; 7.07]; 
+y_sigma = [0.1,1.0,1.0,0.1];
 
 % 1000 samples within y
 n_samp = 1e5;
@@ -26,7 +27,7 @@ Y = mvnrnd(y_mu,y_sigma,n_samp)';
 X = zeros(2,n_samp);
 
 for j = 1:n_samp
-    X(:,j) = gauss_newton(@g,@J,Y(:,j),x0,M,N);
+    X(:,j) = gauss_newton(@range_g,@range_J,Y(:,j),x0,M,N);
 end
 
 x = X(1,:)'; y = X(2,:)';
@@ -36,7 +37,7 @@ scatter(x,y,'.');
 
 %% Confidence interval
 
-P = 0.9973; % probability threshold
+P = 0.5; % probability threshold
 
 y_c = y_mu; 
 y_w = norminv((P+1)/2,zeros(m,1),sqrt(y_sigma)');
@@ -62,32 +63,17 @@ n_ext = length(Y_ext);
 
 X_ext = zeros(2,n_ext);
 for j = 1:n_ext
-    X_ext(:,j) = gauss_newton(@g,@J,Y_ext(:,j),x0,M,N);
+    X_ext(:,j) = gauss_newton(@range_g,@range_J,Y_ext(:,j),x0,M,N);
 end
 
 x_pts = X_ext(1,:)'; y_pts = X_ext(2,:)';
 k = convhull(x_pts,y_pts);
 figure(1); hold on; axis equal 
 plot(x_pts(k),y_pts(k));
-scatter(x_pts,y_pts);
+%scatter(x_pts,y_pts);
 
 % check how many of the Gaussian GN solutions lie within the interval GN
 % solution region
+H = Hrep(Vrep([x_pts(k),y_pts(k)]));
 
-
-%% functions
-
-% nonlinear range measurement function
-function y = g(x,M)
-    y = vecnorm(M - x, 2, 1)';
-end
-
-% measurement jacobian
-function Ji = J(x,M)
-    m = size(M,2); n = size(x,1);
-    Ji = zeros(m,n);
-    for i = 1:m
-        d = norm(M(:,i) - x);
-        Ji(i,:) = [-(M(1,i)-x(1))/d, -(M(2,i)-x(2))/d];
-    end
-end
+disp(['Number of points inside interval bound: ', num2str(sum(in(H,X)))]);

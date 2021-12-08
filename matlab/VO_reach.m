@@ -2,8 +2,8 @@
 % Use a direct approach (operate directly on pixel intensities)
 
 % read in images
-I1 = imread('000000.png');
-I2 = imread('000001.png');
+I0 = imread('000000.png'); % reference frame
+I1 = imread('000001.png'); % current frame
 
 
 
@@ -30,3 +30,15 @@ I2 = imread('000001.png');
 % add noise to imgs and convert to zonotopes 
 
 % extract features
+
+
+%% functions
+
+% re-projection function
+function w = reproject(p,X)
+    
+end
+
+
+function J_ic = inv_comp_jacobian()
+end
